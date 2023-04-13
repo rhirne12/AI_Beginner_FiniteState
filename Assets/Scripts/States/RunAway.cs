@@ -24,18 +24,10 @@ public class RunAway : State
 
     public override void Update()
     {
-
-        if (agent.hasPath)
+        if (agent.remainingDistance < 2)
         {
-            Vector3 direction = safePlace.transform.position - npc.transform.position;
-            direction.y = 0;
-            npc.transform.rotation = Quaternion.Slerp(npc.transform.rotation, Quaternion.LookRotation(direction), Time.deltaTime * rotationSpeed);
-
-            if (agent.remainingDistance < 2)
-            {
-                nextState = new Idle(npc, agent, anim, player);
-                stage = EVENT.EXIT;
-            }
+            nextState = new Idle(npc, agent, anim, player);
+            stage = EVENT.EXIT;
         }
     }
 
