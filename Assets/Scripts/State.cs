@@ -7,7 +7,7 @@ public class State
 {
     public enum STATE
     {
-        IDLE, PATROL, PURSUE, ATTACK, SLEEP
+        IDLE, PATROL, PURSUE, ATTACK, SLEEP, RUNAWAY
     };
 
     public enum EVENT
@@ -51,75 +51,38 @@ public class State
         }
         return this;
     }
-}
 
-// Normally these would be in seperate files
-// but for this tutorial, they are placed in the same file
-
-public class Idle : State
-{
-    public Idle(GameObject _npc, NavMeshAgent _agent, Animator _anim, Transform _player) : base(_npc, _agent, _anim, _player)
+    public bool CanSeePlayer()
     {
-        name = STATE.IDLE;
-    }
+        Vector3 direction = player.position - npc.transform.position;
+        float angle = Vector3.Angle(direction, npc.transform.forward);
 
-    public override void Enter()
-    {
-        anim.SetTrigger("isIdle");
-        base.Enter();
-    }
-
-    public override void Update()
-    {
-        if(Random.Range(0,100) < 10)
+        if (direction.magnitude < visDistance && angle < visAngle)
         {
-            nextState = new Patrol(npc, agent, anim, player);
-            stage = EVENT.EXIT;
+            return true;
         }
+        return false;
     }
 
-    public override void Exit()
+    public bool CanAttackPlayer()
     {
-        anim.ResetTrigger("isIdle");
-        base.Exit();
-    }
-}
-
-
-public class Patrol : State
-{
-    int currentIndex = -1;
-
-    public Patrol (GameObject _npc, NavMeshAgent _agent, Animator _anim, Transform _player) : base(_npc, _agent, _anim, _player)
-    {
-        name = STATE.PATROL;
-        agent.speed = 2;
-        agent.isStopped = false;
-    }
-
-    public override void Enter()
-    {
-        currentIndex = 0;
-        anim.SetTrigger("isWalking");
-        base.Enter();
-    }
-
-    public override void Update()
-    {
-        if (agent.remainingDistance < 1)
+        Vector3 direction = player.position - npc.transform.position;
+        if (direction.magnitude < shootDist)
         {
-            if (currentIndex >= GameEnvironment.Singleton.Checkpoints.Count - 1)
-                currentIndex = 0;
-            else
-                currentIndex++;
-
-            agent.SetDestination(GameEnvironment.Singleton.Checkpoints[currentIndex].transform.position);
+            return true;
         }
+        return false;
     }
 
-    public override void Exit()
+    public bool CanRunAway()
     {
-        anim.ResetTrigger("isWalking");
-        base.Exit();
+        Vector3 direction = npc.transform.position - player.position;
+        float angle = Vector3.Angle(direction, npc.transform.forward);
+
+        if (direction.magnitude < 2 && angle < 30)
+        {
+            return true;
+        }
+        return false;
     }
 }
